@@ -1,4 +1,4 @@
-prefix=/home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/install
+prefix=/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/install
 
 Name: offboardholy
 Description: Description of offboardholy

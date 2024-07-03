@@ -67,14 +67,14 @@ set(offboardholy_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("TRUE" STREQUAL "TRUE")
-  set(offboardholy_SOURCE_PREFIX /home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/src/offboardholy)
-  set(offboardholy_DEVEL_PREFIX /home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/devel)
+  set(offboardholy_SOURCE_PREFIX /home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/src/offboardholy)
+  set(offboardholy_DEVEL_PREFIX /home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/devel)
   set(offboardholy_INSTALL_PREFIX "")
   set(offboardholy_PREFIX ${offboardholy_DEVEL_PREFIX})
 else()
   set(offboardholy_SOURCE_PREFIX "")
   set(offboardholy_DEVEL_PREFIX "")
-  set(offboardholy_INSTALL_PREFIX /home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/install)
+  set(offboardholy_INSTALL_PREFIX /home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/install)
   set(offboardholy_PREFIX ${offboardholy_INSTALL_PREFIX})
 endif()
 
@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(offboardholy_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT "/home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/devel/include " STREQUAL " ")
+if(NOT "/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/devel/include " STREQUAL " ")
   set(offboardholy_INCLUDE_DIRS "")
-  set(_include_dirs "/home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/devel/include")
+  set(_include_dirs "/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/devel/include")
   if(NOT " " STREQUAL " ")
     set(_report "Check the issue tracker '' and consider creating a ticket if the problem has not been reported yet.")
   elseif(NOT " " STREQUAL " ")
@@ -110,7 +110,7 @@ if(NOT "/home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/devel/inc
         message(FATAL_ERROR "Project 'offboardholy' specifies '${idir}' as an include dir, which is not found.  It does not exist in '${include}'.  ${_report}")
       endif()
     else()
-      message(FATAL_ERROR "Project 'offboardholy' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/src/offboardholy/${idir}'.  ${_report}")
+      message(FATAL_ERROR "Project 'offboardholy' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/src/offboardholy/${idir}'.  ${_report}")
     endif()
     _list_append_unique(offboardholy_INCLUDE_DIRS ${include})
   endforeach()
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/devel/lib;/home/ejyan/RosRecord/devel/lib;/home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/devel/lib;/home/ejyan/RosRecord/devel/lib;/home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
