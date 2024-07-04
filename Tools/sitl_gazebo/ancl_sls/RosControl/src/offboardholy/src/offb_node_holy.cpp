@@ -17,7 +17,7 @@
 #include <tf2/transform_datatypes.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <offboardholy/configConfig.h> 
+#include <offboardholy/configConfig.h>
 #include <StabController.h>
 #include <TracController.h>
 #include <rtwtypes.h>
@@ -76,6 +76,8 @@ double Kv12[12] = {};
 
 double Param[4] = {};
 
+bool gotime;
+
 void callback(offboardholy::configConfig &config, uint32_t level) {
    Kv12[0] = config.Kv_0;
    Kv12[1] = config.Kv_1;
@@ -127,7 +129,7 @@ int main(int argc, char **argv)
 
     //Attitude + Controller Output topic publisher
     ros::Publisher att_con_pub = nh.advertise<offboardholy::AttOut>("/offboardholy/att_con", 10);
-    
+
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
     ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("mavros/set_mode");
 
@@ -157,7 +159,7 @@ int main(int argc, char **argv)
 
     // mavros_msgs::AttitudeTarget attitude;
     attitude.header.stamp = ros::Time::now();
-    attitude.header.frame_id = "map"; 
+    attitude.header.frame_id = "map";
     attitude.orientation.x = 0;
     attitude.orientation.y = 0;
     attitude.orientation.z = 0;
@@ -193,7 +195,7 @@ int main(int argc, char **argv)
 
     dynamic_reconfigure::Server<offboardholy::configConfig> server;
     dynamic_reconfigure::Server<offboardholy::configConfig>::CallbackType f;
-    
+
     f = boost::bind(&callback, _1, _2);
     server.setCallback(f);
 
@@ -207,6 +209,11 @@ int main(int argc, char **argv)
         //double Param[4] = {1.5, 0.2, 1, 9.8};
         double Setpoint[3] = {0, 0, -0.3};
         //double Setpoint[3] = {0, 0, -10.0};
+
+        nh.getParam("bool", gotime);
+        ROS_INFO("%d", gotime);
+
+
         for (int i=0;i<10; i++){
           dv[i] = PTState.PT_states[i];
           // ROS_INFO_STREAM( "dv[i]: "<< i << " : " << dv[i] << "\n");
@@ -217,7 +224,7 @@ int main(int argc, char **argv)
         Param[2] = sqrt((Lx*Lx) + (Ly*Ly) + (Lz*Lz));
         ROS_INFO_STREAM("Length: " << Param[2]);
         switch (stage)
-        {  
+        {
         case 0: // takeoff
             if( current_state.mode != "OFFBOARD" &&
                 (ros::Time::now() - last_request > ros::Duration(5.0))){
@@ -238,11 +245,11 @@ int main(int argc, char **argv)
             }
             pose.header.stamp = ros::Time::now();
             local_pos_pub.publish(pose);
-            distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2) 
+            distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2)
             + std::pow((current_local_pos.pose.position.y - pose.pose.position.y),2)
             + std::pow((current_local_pos.pose.position.z - pose.pose.position.z),2);
 
-            // distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2) 
+            // distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2)
             // + std::pow((current_local_pos.pose.position.y - pose.pose.position.y),2)
             // + std::pow((current_local_pos.pose.position.z - pose.pose.position.z),2);
 
@@ -259,8 +266,8 @@ int main(int argc, char **argv)
             //IntrgralStabController(dv, Kv15, Param, Setpoint, controller_output, err_int, Ki, t_last);
             force_attitude_convert(controller_output, attitude);
             attitude_setpoint_pub.publish(attitude);
-            
-            distance = std::pow((current_local_pos.pose.position.x - Setpoint[0]),2) 
+
+            distance = std::pow((current_local_pos.pose.position.x - Setpoint[0]),2)
             + std::pow((current_local_pos.pose.position.y - (-Setpoint[1])),2)
             + std::pow((current_local_pos.pose.position.z - (-Setpoint[2]+0.95)),2);
 
@@ -280,8 +287,8 @@ int main(int argc, char **argv)
             force_attitude_convert(controller_output, attitude);
             attitude.header.stamp = ros::Time::now();
             attitude_setpoint_pub.publish(attitude);
-            
-            distance = std::pow((current_local_pos.pose.position.x - Setpoint[0]),2) 
+
+            distance = std::pow((current_local_pos.pose.position.x - Setpoint[0]),2)
             + std::pow((current_local_pos.pose.position.y - (-Setpoint[1])),2)
             + std::pow((current_local_pos.pose.position.z - (-Setpoint[2]+0.95)),2);
             // ROS_INFO_STREAM(" X: " << current_local_pos.pose.position.x << " Y: " << current_local_pos.pose.position.y << " Z: " << current_local_pos.pose.position.z);
@@ -292,7 +299,7 @@ int main(int argc, char **argv)
                 last_request = ros::Time::now();
             }
             break;
-        
+
         case 3: // setpoint position control
             Setpoint[0] = -1;
             Setpoint[1] = 0;
@@ -301,8 +308,8 @@ int main(int argc, char **argv)
             force_attitude_convert(controller_output, attitude);
             attitude.header.stamp = ros::Time::now();
             attitude_setpoint_pub.publish(attitude);
-            
-            distance = std::pow((current_local_pos.pose.position.x - Setpoint[0]),2) 
+
+            distance = std::pow((current_local_pos.pose.position.x - Setpoint[0]),2)
             + std::pow((current_local_pos.pose.position.y - (-Setpoint[1])),2)
             + std::pow((current_local_pos.pose.position.z - (-Setpoint[2]+0.95)),2);
             ROS_INFO_STREAM("Distance: " << distance);
@@ -321,8 +328,8 @@ int main(int argc, char **argv)
             force_attitude_convert(controller_output, attitude);
             attitude.header.stamp = ros::Time::now();
             attitude_setpoint_pub.publish(attitude);
-            
-            distance = std::pow((current_local_pos.pose.position.x - Setpoint[0]),2) 
+
+            distance = std::pow((current_local_pos.pose.position.x - Setpoint[0]),2)
             + std::pow((current_local_pos.pose.position.y - (-Setpoint[1])),2)
             + std::pow((current_local_pos.pose.position.z - (-Setpoint[2]+0.95)),2);
             ROS_INFO_STREAM("Distance: " << distance);
@@ -332,7 +339,7 @@ int main(int argc, char **argv)
                 last_request = ros::Time::now();
             }
             break;
-        
+
         case 5: //Trajectory tracking
             attitude.header.stamp = ros::Time::now();
             TracController(dv, Kv12, Param, ros::Time::now().toSec() - last_request.toSec(), controller_output);
@@ -353,7 +360,7 @@ int main(int argc, char **argv)
             pose.pose.position.y = 0;
             pose.pose.position.z = 0.5;
             local_pos_pub.publish(pose);
-            distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2) 
+            distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2)
             + std::pow((current_local_pos.pose.position.y - pose.pose.position.y),2)
             + std::pow((current_local_pos.pose.position.z - pose.pose.position.z),2);
             if(ros::Time::now() - last_request > ros::Duration(5.0)){
@@ -365,7 +372,7 @@ int main(int argc, char **argv)
                 // pose.pose.position.y = 0;
                 // pose.pose.position.z = 0.5;
                 // local_pos_pub.publish(pose);
-                // distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2) 
+                // distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2)
                 // + std::pow((current_local_pos.pose.position.y - pose.pose.position.y),2)
                 // + std::pow((current_local_pos.pose.position.z - pose.pose.position.z),2);
                 // if(ros::Time::now() - last_request > ros::Duration(10.0) && distance < 0.1){
@@ -376,12 +383,12 @@ int main(int argc, char **argv)
                 }
             }
             break;
-        
+
         default:
             if( set_mode_client.call(land_mode) && land_mode.response.mode_sent){
                 // arm_cmd.request.value = false;
                 // arming_client.call(arm_cmd);
-                // ROS_INFO("Land enabled"); 
+                // ROS_INFO("Land enabled");
             }
             break;
         }
@@ -410,16 +417,16 @@ int main(int argc, char **argv)
         //     stage += 1;
         // }
 
-      
+
         // attitude.header.stamp = ros::Time::now();
         // attitude_setpoint_pub.publish(attitude);
 
 
-        
+
         // ROS_INFO("Attitude Control armed");
 
 
-		// distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2) 
+		// distance = std::pow((current_local_pos.pose.position.x - pose.pose.position.x),2)
 		// + std::pow((current_local_pos.pose.position.y - pose.pose.position.y),2)
 		// + std::pow((current_local_pos.pose.position.z - pose.pose.position.z),2);
 
@@ -464,7 +471,7 @@ void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTa
 // void IntrgralStabController(const double x[10], const double Kv[12],
 //                            const double param[4], const double setpoint[3],
 //                            double u[3], double err_int[3], double Ki[3]){
-    
+
 //     err_int[0] += (current_local_pos.pose.position.x - setpoint[0]);
 //     err_int[1] += current_local_pos.pose.position.y - (-setpoint[1]);
 //     err_int[2] += current_local_pos.pose.position.z - (-setpoint[2]+1.00);
@@ -489,7 +496,7 @@ void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTa
 
 void att_out_pub(ros::Publisher &att_con_pub, const double controller_output[3]){
     att_out.header.stamp = ros::Time::now();
-    
+
     double roll,pitch,yaw, thrust;
     thrust = sqrt(controller_output[0]*controller_output[0] + controller_output[1]*controller_output[1] + controller_output[2]*controller_output[2]);
     yaw = 0;
@@ -505,7 +512,7 @@ void att_out_pub(ros::Publisher &att_con_pub, const double controller_output[3])
     for (int i = 0; i < 3; i++){
         att_out.con_out[i] = controller_output[i];
     }
- 
+
     att_con_pub.publish(att_out);
 }
 
@@ -513,7 +520,7 @@ void att_out_pub(ros::Publisher &att_con_pub, const double controller_output[3])
 void IntrgralStabController(const double x[10], const double Kv[15],
                            const double param[4], const double setpoint[3],
                            double u[3], double err_int[3], double Ki[3], double t_last){
-    
+
     double dt;
     // dt = ros::Time::now().toSec() - t_last;
 
@@ -531,8 +538,8 @@ void IntrgralStabController(const double x[10], const double Kv[15],
     for(int i=0; i<3; i++){
         if(err_int[i]>20) err_int[i] = 20;
         else if (err_int[i]<-20) err_int[i] = -20;
-    }       
-    
+    }
+
     //ROS_DEBUG("err1: %f, err2: %f, err3: %f", err_int[0], err_int[1], err_int[2]);
 
 
@@ -549,7 +556,7 @@ void IntrgralStabController(const double x[10], const double Kv[15],
     for(int i=0; i<13; i++){
         // ROS_INFO("x_ext[%d]: %f", i, x_ext[i]);
     }
-   
+
     StabController(x_ext, Kv, param, setpoint, u);
 
     t_last = ros::Time::now().toSec();

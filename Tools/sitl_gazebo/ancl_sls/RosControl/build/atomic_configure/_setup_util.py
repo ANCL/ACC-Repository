@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
         if not args.local:
             # environment at generation time
-            CMAKE_PREFIX_PATH = r'/home/ejyan/RosRecord/devel;/home/ejyan/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/devel;/opt/ros/noetic'.split(';')
+            CMAKE_PREFIX_PATH = r'/home/kesmart/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/devel;/home/kesmart/PX4_SITL_664/Tools/sitl_gazebo/ancl_sls/RosControl/devel;/opt/ros/noetic'.split(';')
         else:
             # don't consider any other prefix path than this one
             CMAKE_PREFIX_PATH = []

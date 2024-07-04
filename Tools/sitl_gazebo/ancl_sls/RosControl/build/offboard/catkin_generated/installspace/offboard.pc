@@ -1,4 +1,4 @@
-prefix=/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/install
+prefix=/home/kesmart/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/install
 
 Name: offboard
 Description: Description of offboard
