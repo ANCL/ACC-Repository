@@ -12,6 +12,7 @@
 #include "StabController.h"
 #include "rt_nonfinite.h"
 #include <cmath>
+#include <vector>
 
 // Function Declarations
 static double rt_powd_snf(double u0, double u1);
@@ -75,9 +76,7 @@ static double rt_powd_snf(double u0, double u1)
 //                double u[3]
 // Return Type  : void
 //
-void StabController(const double x[10], const double Kv[12],
-                    const double param[4], const double setpoint[3],
-                    double u[3])
+void StabController(const double x[10], const double Kv[12], const double param[4], const double setpoint[3], double u[3])
 {
   double Ts1_idx_1;
   double Ts1_idx_1_tmp;

@@ -137,8 +137,18 @@ int main(int argc, char **argv)
         PT_state_pub(sls_state_pub);
         double dv[10] = {};
         double controller_output[3] = {};
-        double Kv12[12] = {2.2361,    3.1623, 3.1623,   3.0777,    8.4827,    8.4827,  0,    9.7962,    9.7962,  0,    5.4399,    5.4399};
-        double Param[4] = {1.5, 0.2, 1, 9.8};
+        //double Kv12[12] = {2.2361,    3.1623, 3.1623,   3.0777,    8.4827,    8.4827,  0,    9.7962,    9.7962,  0,    5.4399,    5.4399};
+        
+        double quad_mass;
+        nh.getParam("quad_mass", quad_mass);
+        double pend_mass;
+        nh.getParam("pend_mass", pend_mass);
+        double pend_len;
+        nh.getParam("pend_len", pend_len);
+        double grav;
+        nh.getParam("grav", grav);
+        double Param[4] = {quad_mass, pend_mass, pend_len, grav};
+
         for (int i=0;i<10; i++){
           dv[i] = PTState.PT_states[i];
           // ROS_INFO_STREAM( "dv[i]: "<< i << " : " << dv[i] << "\n");
