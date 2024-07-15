@@ -215,7 +215,7 @@ int main(int argc, char **argv)
         double Ly = (-loadpose.position.y) - (-quadpose.position.y) ;
         double Lz = (-loadpose.position.z) - (-quadpose.position.z) ;
         Param[2] = sqrt((Lx*Lx) + (Ly*Ly) + (Lz*Lz));
-        ROS_INFO_STREAM("Length: " << Param[2]);
+        //ROS_INFO_STREAM("Length: " << Param[2]);
         switch (stage)
         {  
         case 0: // takeoff
