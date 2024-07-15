@@ -1,8 +1,0 @@
-prefix=/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/install
-
-Name: offboardholy
-Description: Description of offboardholy
-Version: 0.0.0
-Cflags: -I${prefix}/include
-Libs: -L${prefix}/lib 
-Requires: geometry_msgs mavros roscpp message_runtime
