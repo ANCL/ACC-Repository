@@ -245,7 +245,7 @@ void gazebo_state_cb(const gazebo_msgs::LinkStates::ConstPtr& msg){
     sls_state1.alpha = penangle.alpha;
     sls_state1.beta = penangle.beta;
 
-    double L = sqrt((Lx*Lx) + (Ly*Ly) + (Lz*Lz));
+    double L = 1; //sqrt((Lx*Lx) + (Ly*Ly) + (Lz*Lz));
     double g_alpha, g_beta;
     g_beta = ((loadtwist.linear.x) - (quadtwist.linear.x))/(L*std::cos(sls_state1.beta));
     g_alpha = ((-loadtwist.linear.y) - (-quadtwist.linear.y) - std::sin(sls_state1.alpha)*std::sin(sls_state1.beta)*g_beta*L)/(-std::cos(sls_state1.alpha)*std::cos(sls_state1.beta)*L);
@@ -257,7 +257,7 @@ void gazebo_state_cb(const gazebo_msgs::LinkStates::ConstPtr& msg){
 
 PendulumAngles ToPenAngles(double Lx,double Ly,double Lz) { //x=base.x
     PendulumAngles angles;
-    double L = sqrt((Lx*Lx) + (Ly*Ly) + (Lz*Lz));
+    double L = 1; //sqrt((Lx*Lx) + (Ly*Ly) + (Lz*Lz));
     ROS_INFO_STREAM("Length: " << L);
 
     // beta (y-axis rotation)

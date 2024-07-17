@@ -113,6 +113,10 @@ offb_holy::AttOut att_out;
 
 inline Eigen::Vector4d quatMultiplication(const Eigen::Vector4d &q, const Eigen::Vector4d &p);
 
+inline Eigen::Matrix3d quat2RotMatrix(const Eigen::Vector4d &q);
+
+bool gotime;
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "offb_node");
@@ -125,8 +129,8 @@ int main(int argc, char **argv)
     ros::Subscriber sls_state_sub = nh.subscribe<offb_holy::PTStates>("/offb_holy/sls_state", 10, sls_state_cb);
     ros::Subscriber gazebo_state_sub = nh.subscribe<gazebo_msgs::LinkStates>("gazebo/link_states", 10, gazebo_state_cb);
 
-    ros::Publisher attitude_setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("mavros/setpoint_raw/attitude", 10);
-    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 10);
+    ros::Publisher attitude_setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("mavros/setpoint_raw/attitude", 1);
+    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 1);
 
     //Attitude + Controller Output topic publisher
     ros::Publisher att_con_pub = nh.advertise<offb_holy::AttOut>("/offb_holy/att_con", 10);
@@ -217,8 +221,8 @@ int main(int argc, char **argv)
         double Lx = (loadpose.position.x) - (quadpose.position.x) ;
         double Ly = (-loadpose.position.y) - (-quadpose.position.y) ;
         double Lz = (-loadpose.position.z) - (-quadpose.position.z) ;
-        Param[2] = sqrt((Lx*Lx) + (Ly*Ly) + (Lz*Lz));
         //ROS_INFO_STREAM("Length: " << Param[2]);
+        nh.getParam("bool", gotime);
         switch (stage)
         {  
         case 0: // takeoff
@@ -249,10 +253,13 @@ int main(int argc, char **argv)
             // + std::pow((current_local_pos.pose.position.y - pose.pose.position.y),2)
             // + std::pow((current_local_pos.pose.position.z - pose.pose.position.z),2);
 
-            if(ros::Time::now() - last_request > ros::Duration(10.0) && distance < 0.2){
-                stage += 1;
-                last_request = ros::Time::now();
-                ROS_INFO("Takeoff finished and switch to position setpoint control mode");
+            if(ros::Time::now() - last_request > ros::Duration(20.0) && distance < 0.1){
+                ROS_INFO("Quadrotor awaits the order to switch to quasi");
+                if(gotime){
+                    stage += 1;
+                    last_request = ros::Time::now();
+                    ROS_INFO("Takeoff finished and switch to position setpoint control mode");                
+                }
             }
             break;
 
@@ -290,7 +297,7 @@ int main(int argc, char **argv)
             // ROS_INFO_STREAM(" X: " << current_local_pos.pose.position.x << " Y: " << current_local_pos.pose.position.y << " Z: " << current_local_pos.pose.position.z);
             ROS_INFO_STREAM("Distance: " << distance);
             if(ros::Time::now() - last_request > ros::Duration(15.0) && distance < 0.2){
-                stage += 1;
+                //stage += 1;
                 ROS_INFO("Achieve position setpoint and switch to Setpoint 2");
                 last_request = ros::Time::now();
             }
@@ -446,7 +453,7 @@ void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTa
   attitude.header.stamp = ros::Time::now();
   double roll,pitch,yaw, thrust;
   thrust = sqrt(controller_output[0]*controller_output[0] + controller_output[1]*controller_output[1] + controller_output[2]*controller_output[2]);
-  ROS_INFO_STREAM("Thrust: " << thrust);
+  //ROS_INFO_STREAM("Thrust: " << thrust);
   yaw = 0;
   roll = std::asin(controller_output[1]/thrust);
   pitch = std::atan2(controller_output[0], -controller_output[2]);
@@ -455,8 +462,8 @@ void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTa
   attitude_target_q.setRPY(roll, pitch, yaw);
 
 
-  //for rate publishing
-  double attctrl_tau_{1.0};
+  //for rate publishing from Jaeyoung Lim mavros-controllers
+  double attctrl_tau_{0.15};
   const Eigen::Vector4d ref_att(attitude_target_q.getW(), attitude_target_q.getX(), attitude_target_q.getY(), attitude_target_q.getZ());
 
   const Eigen::Vector4d inverse(1.0, -1.0, -1.0, -1.0);
@@ -469,7 +476,7 @@ void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTa
   attitude.body_rate.z = (2.0 / attctrl_tau_) * std::copysign(1.0, qe(0)) * qe(3);
 
   attitude.thrust = (thrust-16.67122)/20 + 0.8168;
-
+  ROS_INFO_STREAM("Thrust: " << attitude.thrust);
   attitude.type_mask = 128;
   attitude.orientation.x = attitude_target_q.getX();
   attitude.orientation.y = attitude_target_q.getY();
@@ -485,6 +492,19 @@ inline Eigen::Vector4d quatMultiplication(const Eigen::Vector4d &q, const Eigen:
   quat << p(0) * q(0) - p(1) * q(1) - p(2) * q(2) - p(3) * q(3), p(0) * q(1) + p(1) * q(0) - p(2) * q(3) + p(3) * q(2),
       p(0) * q(2) + p(1) * q(3) + p(2) * q(0) - p(3) * q(1), p(0) * q(3) - p(1) * q(2) + p(2) * q(1) + p(3) * q(0);
   return quat;
+}
+
+inline Eigen::Matrix3d quat2RotMatrix(const Eigen::Vector4d &q) {
+  Eigen::Matrix3d rotmat;
+  rotmat << q(0) * q(0) + q(1) * q(1) - q(2) * q(2) - q(3) * q(3), 2 * q(1) * q(2) - 2 * q(0) * q(3),
+      2 * q(0) * q(2) + 2 * q(1) * q(3),
+
+      2 * q(0) * q(3) + 2 * q(1) * q(2), q(0) * q(0) - q(1) * q(1) + q(2) * q(2) - q(3) * q(3),
+      2 * q(2) * q(3) - 2 * q(0) * q(1),
+
+      2 * q(1) * q(3) - 2 * q(0) * q(2), 2 * q(0) * q(1) + 2 * q(2) * q(3),
+      q(0) * q(0) - q(1) * q(1) - q(2) * q(2) + q(3) * q(3);
+  return rotmat;
 }
 
 // void IntrgralStabController(const double x[10], const double Kv[12],

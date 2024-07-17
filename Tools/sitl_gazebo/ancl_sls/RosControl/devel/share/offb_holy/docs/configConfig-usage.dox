@@ -1,7 +1,7 @@
 \subsubsection usage Usage
 \verbatim
 <node name="offb_holy" pkg="offb_holy" type="offb_holy">
-  <param name="Kv_0" type="double" value="2.2361" />
+  <param name="Kv_0" type="double" value="2.7361" />
   <param name="Kv_1" type="double" value="3.1623" />
   <param name="Kv_2" type="double" value="3.1623" />
   <param name="Kv_3" type="double" value="3.0777" />

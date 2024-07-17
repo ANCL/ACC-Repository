@@ -1,0 +1,3 @@
+<launch>
+    <rosparam command="load" file="$(find offb_holy)/cfg/offboard_params.yaml" />
+</launch>
