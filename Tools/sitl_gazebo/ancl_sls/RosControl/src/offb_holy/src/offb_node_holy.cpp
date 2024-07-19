@@ -265,8 +265,8 @@ int main(int argc, char **argv)
 
         case 1: // setpoint position control
             attitude.header.stamp = ros::Time::now();
-            StabController(dv, Kv12, Param, Setpoint, controller_output);
-            //IntrgralStabController(dv, Kv15, Param, Setpoint, controller_output, err_int, Ki, t_last);
+            //StabController(dv, Kv12, Param, Setpoint, controller_output);
+            IntrgralStabController(dv, Kv15, Param, Setpoint, controller_output, err_int, Ki, t_last);
             force_attitude_convert(controller_output, attitude);
             attitude_setpoint_pub.publish(attitude);
             
@@ -467,9 +467,9 @@ void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTa
   const Eigen::Vector4d ref_att(attitude_target_q.getW(), attitude_target_q.getX(), attitude_target_q.getY(), attitude_target_q.getZ());
 
   const Eigen::Vector4d inverse(1.0, -1.0, -1.0, -1.0);
-  const Eigen::Vector4d curr_att(quadpose.orientation.w, quadpose.orientation.x, quadpose.orientation.y, quadpose.orientation.z);
-  const Eigen::Vector4d q_inv = inverse.asDiagonal() * curr_att;
-  const Eigen::Vector4d qe = quatMultiplication(q_inv, ref_att);
+  const Eigen::Vector4d curr_att(quadpose.orientation.w, -quadpose.orientation.x, -quadpose.orientation.y, -quadpose.orientation.z);
+  //const Eigen::Vector4d q_inv = inverse.asDiagonal() * curr_att;
+  const Eigen::Vector4d qe = quatMultiplication(curr_att, ref_att);
 
   attitude.body_rate.x = (2.0 / attctrl_tau_) * std::copysign(1.0, qe(0)) * qe(1);
   attitude.body_rate.y = (2.0 / attctrl_tau_) * std::copysign(1.0, qe(0)) * qe(2);
@@ -542,7 +542,7 @@ void att_out_pub(ros::Publisher &att_con_pub, const double controller_output[3])
     roll = std::asin(controller_output[1]/thrust);
     pitch = std::atan2(controller_output[0], -controller_output[2]);
 
-    att_out.target_thrust = thrust;
+    att_out.target_thrust = (thrust-16.67122)/20 + 0.8168;
 
     att_out.rpy[0] = roll;
     att_out.rpy[1] = pitch;
