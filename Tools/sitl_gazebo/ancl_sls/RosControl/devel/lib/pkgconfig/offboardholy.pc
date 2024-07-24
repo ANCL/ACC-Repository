@@ -3,6 +3,6 @@ prefix=/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/devel
 Name: offboardholy
 Description: Description of offboardholy
 Version: 0.0.0
-Cflags: -I/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/devel/include
-Libs: -L${prefix}/lib 
-Requires: geometry_msgs mavros roscpp message_runtime
+Cflags: -I/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/devel/include -I/home/ejyan/ACC-Repository/Tools/sitl_gazebo/ancl_sls/RosControl/src/Multi-File/include
+Libs: -L${prefix}/lib -loffboardholy
+Requires: roscpp rospy std_msgs mavros message_runtime
