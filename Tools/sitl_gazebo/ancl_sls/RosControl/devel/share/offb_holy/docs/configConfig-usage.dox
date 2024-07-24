@@ -17,6 +17,7 @@
   <param name="pend_mass" type="double" value="0.2" />
   <param name="pend_len" type="double" value="1.0" />
   <param name="grav" type="double" value="9.8" />
+  <param name="tau" type="double" value="0.15" />
 </node>
 \endverbatim
 

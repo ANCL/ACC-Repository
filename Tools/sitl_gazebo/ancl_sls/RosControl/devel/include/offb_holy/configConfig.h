@@ -255,6 +255,7 @@ class DEFAULT
         if("pend_mass"==(*_i)->name){pend_mass = boost::any_cast<double>(val);}
         if("pend_len"==(*_i)->name){pend_len = boost::any_cast<double>(val);}
         if("grav"==(*_i)->name){grav = boost::any_cast<double>(val);}
+        if("tau"==(*_i)->name){tau = boost::any_cast<double>(val);}
       }
     }
 
@@ -274,6 +275,7 @@ double quad_mass;
 double pend_mass;
 double pend_len;
 double grav;
+double tau;
 
     bool state;
     std::string name;
@@ -315,6 +317,8 @@ double grav;
       double pend_len;
 //#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
       double grav;
+//#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
+      double tau;
 //#line 231 "/opt/ros/noetic/share/dynamic_reconfigure/cmake/../templates/ConfigType.h.template"
 
     bool __fromMessage__(dynamic_reconfigure::Config &msg)
@@ -613,6 +617,16 @@ configConfig::GroupDescription<configConfig::DEFAULT, configConfig> Default("Def
       Default.abstract_parameters.push_back(configConfig::AbstractParamDescriptionConstPtr(new configConfig::ParamDescription<double>("grav", "double", 0, "gravitational field strength (m/s/s)", "", &configConfig::grav)));
 //#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
       __param_descriptions__.push_back(configConfig::AbstractParamDescriptionConstPtr(new configConfig::ParamDescription<double>("grav", "double", 0, "gravitational field strength (m/s/s)", "", &configConfig::grav)));
+//#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
+      __min__.tau = 0.0;
+//#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
+      __max__.tau = 2.0;
+//#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
+      __default__.tau = 0.15;
+//#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
+      Default.abstract_parameters.push_back(configConfig::AbstractParamDescriptionConstPtr(new configConfig::ParamDescription<double>("tau", "double", 0, "rates parameter", "", &configConfig::tau)));
+//#line 291 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
+      __param_descriptions__.push_back(configConfig::AbstractParamDescriptionConstPtr(new configConfig::ParamDescription<double>("tau", "double", 0, "rates parameter", "", &configConfig::tau)));
 //#line 246 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
       Default.convertParams();
 //#line 246 "/opt/ros/noetic/lib/python3/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"

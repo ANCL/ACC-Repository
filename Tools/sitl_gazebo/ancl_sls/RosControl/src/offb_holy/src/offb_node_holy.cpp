@@ -27,7 +27,7 @@
 #include <Eigen/Dense>
 
 void PT_state_pub(ros::Publisher &sls_state_pub);
-void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTarget &attitude);
+void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTarget &attitude, double attctrl_tau_);
 void IntrgralStabController(const double x[10], const double Kv[15],
                            const double param[4], const double setpoint[3],
                            double u[3], double err_int[3], double Ki[3], double t_last);
@@ -77,6 +77,8 @@ double Kv12[12] = {};
 
 double Param[4] = {};
 
+double attctrl_tau_;
+
 void callback(offb_holy::configConfig &config, uint32_t level) {
     Kv12[0] = config.Kv_0;
     Kv12[1] = config.Kv_1;
@@ -96,6 +98,8 @@ void callback(offb_holy::configConfig &config, uint32_t level) {
     Param[2] = config.pend_len;
     Param[3] = config.grav;
 
+    attctrl_tau_ = config.tau;
+
     ROS_INFO("Reconfiguration complete - Summary: ");
     for (int i = 0; i < 12; i++){
         ROS_INFO_STREAM("Kv[" << i << "]: " << Kv12[i]);
@@ -105,6 +109,7 @@ void callback(offb_holy::configConfig &config, uint32_t level) {
     ROS_INFO_STREAM("Pend Mass: " << Param[1]);
     ROS_INFO_STREAM("Pend Length: " << Param[2]);
     ROS_INFO_STREAM("Gravity: " << Param[3]);
+    ROS_INFO_STREAM("Tau: " << attctrl_tau_);
 }
 
 void att_out_pub(ros::Publisher &att_out_pub, const double controller_output[3]);
@@ -129,8 +134,8 @@ int main(int argc, char **argv)
     ros::Subscriber sls_state_sub = nh.subscribe<offb_holy::PTStates>("/offb_holy/sls_state", 10, sls_state_cb);
     ros::Subscriber gazebo_state_sub = nh.subscribe<gazebo_msgs::LinkStates>("gazebo/link_states", 10, gazebo_state_cb);
 
-    ros::Publisher attitude_setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("mavros/setpoint_raw/attitude", 1);
-    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 1);
+    ros::Publisher attitude_setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("mavros/setpoint_raw/attitude", 10);
+    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 10);
 
     //Attitude + Controller Output topic publisher
     ros::Publisher att_con_pub = nh.advertise<offb_holy::AttOut>("/offb_holy/att_con", 10);
@@ -265,9 +270,9 @@ int main(int argc, char **argv)
 
         case 1: // setpoint position control
             attitude.header.stamp = ros::Time::now();
-            //StabController(dv, Kv12, Param, Setpoint, controller_output);
-            IntrgralStabController(dv, Kv15, Param, Setpoint, controller_output, err_int, Ki, t_last);
-            force_attitude_convert(controller_output, attitude);
+            StabController(dv, Kv12, Param, Setpoint, controller_output);
+            //IntrgralStabController(dv, Kv15, Param, Setpoint, controller_output, err_int, Ki, t_last);
+            force_attitude_convert(controller_output, attitude, attctrl_tau_);
             attitude_setpoint_pub.publish(attitude);
             
             distance = std::pow((current_local_pos.pose.position.x - Setpoint[0]),2) 
@@ -287,7 +292,7 @@ int main(int argc, char **argv)
             Setpoint[1] = 0.5;
             Setpoint[2] = -0.6;
             StabController(dv, Kv12, Param, Setpoint, controller_output);
-            force_attitude_convert(controller_output, attitude);
+            force_attitude_convert(controller_output, attitude, attctrl_tau_);
             attitude.header.stamp = ros::Time::now();
             attitude_setpoint_pub.publish(attitude);
             
@@ -308,7 +313,7 @@ int main(int argc, char **argv)
             Setpoint[1] = 0;
             Setpoint[2] = -0.3;
             StabController(dv, Kv12, Param, Setpoint, controller_output);
-            force_attitude_convert(controller_output, attitude);
+            force_attitude_convert(controller_output, attitude, attctrl_tau_);
             attitude.header.stamp = ros::Time::now();
             attitude_setpoint_pub.publish(attitude);
             
@@ -328,7 +333,7 @@ int main(int argc, char **argv)
             Setpoint[1] = 0;
             Setpoint[2] = -0.3;
             StabController(dv, Kv12, Param, Setpoint, controller_output);
-            force_attitude_convert(controller_output, attitude);
+            force_attitude_convert(controller_output, attitude, attctrl_tau_);
             attitude.header.stamp = ros::Time::now();
             attitude_setpoint_pub.publish(attitude);
             
@@ -346,7 +351,7 @@ int main(int argc, char **argv)
         case 5: //Trajectory tracking
             attitude.header.stamp = ros::Time::now();
             TracController(dv, Kv12, Param, ros::Time::now().toSec() - last_request.toSec(), controller_output);
-            force_attitude_convert(controller_output, attitude);
+            force_attitude_convert(controller_output, attitude, attctrl_tau_);
             attitude_setpoint_pub.publish(attitude);
             if(ros::Time::now() - last_request > ros::Duration(32.0)){
                 stage += 1;
@@ -449,7 +454,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTarget &attitude){
+void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTarget &attitude, double attctrl_tau_){
   attitude.header.stamp = ros::Time::now();
   double roll,pitch,yaw, thrust;
   thrust = sqrt(controller_output[0]*controller_output[0] + controller_output[1]*controller_output[1] + controller_output[2]*controller_output[2]);
@@ -463,7 +468,6 @@ void force_attitude_convert(double controller_output[3], mavros_msgs::AttitudeTa
 
 
   //for rate publishing from Jaeyoung Lim mavros-controllers
-  double attctrl_tau_{0.15};
   const Eigen::Vector4d ref_att(attitude_target_q.getW(), attitude_target_q.getX(), attitude_target_q.getY(), attitude_target_q.getZ());
 
   const Eigen::Vector4d inverse(1.0, -1.0, -1.0, -1.0);
@@ -492,19 +496,6 @@ inline Eigen::Vector4d quatMultiplication(const Eigen::Vector4d &q, const Eigen:
   quat << p(0) * q(0) - p(1) * q(1) - p(2) * q(2) - p(3) * q(3), p(0) * q(1) + p(1) * q(0) - p(2) * q(3) + p(3) * q(2),
       p(0) * q(2) + p(1) * q(3) + p(2) * q(0) - p(3) * q(1), p(0) * q(3) - p(1) * q(2) + p(2) * q(1) + p(3) * q(0);
   return quat;
-}
-
-inline Eigen::Matrix3d quat2RotMatrix(const Eigen::Vector4d &q) {
-  Eigen::Matrix3d rotmat;
-  rotmat << q(0) * q(0) + q(1) * q(1) - q(2) * q(2) - q(3) * q(3), 2 * q(1) * q(2) - 2 * q(0) * q(3),
-      2 * q(0) * q(2) + 2 * q(1) * q(3),
-
-      2 * q(0) * q(3) + 2 * q(1) * q(2), q(0) * q(0) - q(1) * q(1) + q(2) * q(2) - q(3) * q(3),
-      2 * q(2) * q(3) - 2 * q(0) * q(1),
-
-      2 * q(1) * q(3) - 2 * q(0) * q(2), 2 * q(0) * q(1) + 2 * q(2) * q(3),
-      q(0) * q(0) - q(1) * q(1) - q(2) * q(2) + q(3) * q(3);
-  return rotmat;
 }
 
 // void IntrgralStabController(const double x[10], const double Kv[12],
