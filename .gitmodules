@@ -9,11 +9,11 @@
 [submodule "Tools/jMAVSim"]
 	path = Tools/jMAVSim
 	url = https://github.com/PX4/jMAVSim.git
-	branch = master
+	branch = main
 [submodule "src/drivers/gps/devices"]
 	path = src/drivers/gps/devices
 	url = https://github.com/PX4/PX4-GPSDrivers.git
-	branch = master
+	branch = main
 [submodule "src/modules/micrortps_bridge/micro-CDR"]
 	path = src/modules/micrortps_bridge/micro-CDR
 	url = https://github.com/PX4/Micro-CDR.git
@@ -49,6 +49,7 @@
 [submodule "src/lib/events/libevents"]
 	path = src/lib/events/libevents
 	url = https://github.com/mavlink/libevents.git
+	branch = main
 [submodule "Tools/simulation-ignition"]
 	path = Tools/simulation-ignition
 	url = https://github.com/PX4/px4-simulation-ignition.git
@@ -56,10 +57,6 @@
 	path = Tools/sitl_gazebo
 	url =  https://github.com/ANCL/ACC-SITL-2024.git
 	branch = ancl-sls
-[submodule "Tools/sitl_gazebo/ancl_sls/RosControl/src"]
-	path = Tools/sitl_gazebo/ancl_sls/RosControl/src
-	url = https://github.com/ANCL/ACC-Experiment-Code.git
-	branch = multi-file
 [submodule "src/lib/crypto/libtomcrypt"]
 	path = src/lib/crypto/libtomcrypt
 	url = https://github.com/PX4/libtomcrypt.git
@@ -71,3 +68,7 @@
 [submodule "src/modules/microdds_client/Micro-XRCE-DDS-Client"]
 	path = src/modules/microdds_client/Micro-XRCE-DDS-Client
 	url = https://github.com/eProsima/Micro-XRCE-DDS-Client.git
+[submodule "Tools/sitl_gazebo/ancl_sls/RosControl/src/Multi-File"]
+	path = Tools/sitl_gazebo/ancl_sls/RosControl/src/Multi-File
+	url = https://github.com/ANCL/ACC-Experiment-Code.git
+	branch = multi-file
