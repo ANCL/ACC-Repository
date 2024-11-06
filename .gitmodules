@@ -54,8 +54,8 @@
 	url = https://github.com/PX4/px4-simulation-ignition.git
 [submodule "Tools/sitl_gazebo"]
 	path = Tools/sitl_gazebo
-	url =  https://github.com/ANCL/ACC-SITL-2024.git
-	branch = ancl-sls
+	url =  https://github.com/ZifeiJiang/PX4-SITL_gazebo.git
+	branch = master
 [submodule "src/lib/crypto/libtomcrypt"]
 	path = src/lib/crypto/libtomcrypt
 	url = https://github.com/PX4/libtomcrypt.git
